@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.loungecat.opendive.unity"
+    android:installLocation="preferExternal"
+    android:versionCode="7"
+    android:versionName="1.6" >
+
+    <supports-screens
+    android:anyDensity="true"
+    android:largeScreens="true"
+    android:normalScreens="true"
+    android:smallScreens="true"
+    android:xlargeScreens="true" />
+
+<!-- patched manifest starts here -->
+    <application
+        android:allowBackup="true"
+        android:configChanges="orientation"
+        android:icon="@drawable/app_icon"
+        android:label="@string/app_name"
+        android:largeHeap="true" >
+        <activity android:name="com.unity3d.player.UnityPlayerNativeActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+            <meta-data android:name="unityplayer.ForwardNativeEventsToDalvik" android:value="false" />
+        </activity>
+    </application>
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+    <uses-sdk
+    android:minSdkVersion="9"
+    android:targetSdkVersion="19" />
+
+    <uses-feature
+    android:name="android.hardware.screen.landscape"
+    android:required="false" />
+    <uses-feature
+    android:name="android.hardware.sensor.accelerometer"
+    android:required="false" />
+    <uses-feature
+    android:name="android.hardware.sensor.compass"
+    android:required="false" />
+    <uses-feature
+    android:name="android.hardware.sensor.gyroscope"
+    android:required="false" />
+    <uses-feature
+    android:glEsVersion="0x00020000"
+    android:required="false" />
+    
+</manifest>
