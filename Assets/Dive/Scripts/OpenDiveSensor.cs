@@ -198,8 +198,8 @@ public class OpenDiveSensor : MonoBehaviour {
 		get_q(ref q0, ref q1, ref q2, ref q3);
 		//get_m(ref m0, ref m1, ref m2);
 
-		horz = rot.x = -q2;
-		vert = rot.y = q3;
+		vert = rot.x = -q2;
+		horz = rot.y = q3;
 		rot.z = -q1;
 		rot.w = q0;
 #endif
@@ -217,8 +217,8 @@ public class OpenDiveSensor : MonoBehaviour {
 
 #if UNITY_EDITOR
 		if (emulateMouseInEditor) {
-			vert = Input.GetAxis("Mouse Y");
-			horz = Input.GetAxis("Mouse X");
+			vert = Input.GetAxis("Mouse Y") * sensitivityY;
+			horz = Input.GetAxis("Mouse X") * sensitivityX;
 			
 			if (axes == RotationAxes.MouseXY)
 			{
