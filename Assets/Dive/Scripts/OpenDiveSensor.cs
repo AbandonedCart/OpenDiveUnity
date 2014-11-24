@@ -16,8 +16,8 @@ public class OpenDiveSensor : MonoBehaviour {
 
 	// This is used for rotating the camera with another object
 	// for example tilting the camera while going along a racetrack or rollercoaster
-	public bool add_rotation_gameobject = false;
-	public GameObject rotation_gameobject;
+	public bool target_gameobject = false;
+	public GameObject target;
 
 	// mouse emulation
 	public bool emulateMouseInEditor = true;
@@ -31,7 +31,7 @@ public class OpenDiveSensor : MonoBehaviour {
 	//public float max_offcenter_warp = 0.1f;
 	public Camera cameraleft;
 	public Camera cameraright;
-	
+
 	public float zoom = 0.1f;
 	private float IPDCorrection = 0.0f;
 	private float aspectRatio;
@@ -56,13 +56,13 @@ public class OpenDiveSensor : MonoBehaviour {
 #if UNITY_EDITOR
 	private float sensitivityX = 15F;
 	private float sensitivityY = 15F;
-	
+
 	private float minimumX = -360F;
 	private float maximumX = 360F;
-	
+
 	private float minimumY = -90F;
 	private float maximumY = 90F;
-	
+
 	private float rotationY = 0F;
 
 #elif UNITY_ANDROID
@@ -70,7 +70,7 @@ public class OpenDiveSensor : MonoBehaviour {
 	private static AndroidJavaClass javaunityplayerclass;
 	private static AndroidJavaObject currentactivity;
 	private static AndroidJavaObject javadiveplugininstance;
-	
+
 	[DllImport("divesensor")]	private static extern void initialize_sensors();
 	[DllImport("divesensor")]	private static extern int get_q(ref float q0,ref float q1,ref float q2,ref float q3);
 	[DllImport("divesensor")]	private static extern int get_m(ref float m0,ref float m1,ref float m2);
@@ -85,41 +85,33 @@ public class OpenDiveSensor : MonoBehaviour {
 	[DllImport("__Internal")]	private static extern float get_q2();
 	[DllImport("__Internal")]	private static extern float get_q3();
 	[DllImport("__Internal")]	private static extern void DiveUpdateGyroData();
-    [DllImport("__Internal")]	private static extern int get_q(ref float q0,ref float q1,ref float q2,ref float q3);
+	[DllImport("__Internal")]	private static extern int get_q(ref float q0,ref float q1,ref float q2,ref float q3);
 
 #endif
 
 	public static void divecommand(string command){
-#if UNITY_EDITOR
-
-#elif UNITY_ANDROID
+#if !UNITY_EDITOR
+#if UNITY_ANDROID
 		dive_command(command);
-#elif UNITY_IPHONE
-
 #endif
-
+#endif
 	}
 
 	public static void setFullscreen(){
-#if UNITY_EDITOR
-		
-#elif UNITY_ANDROID
+#if !UNITY_EDITOR
+#if UNITY_ANDROID
 		String answer;
 		answer = javadiveplugininstance.Call<string>("setFullscreen");
-
-		
-#elif UNITY_IPHONE
-		
-#endif 	
-		
+#endif
+#endif
 		return;
 	}
 
 	void Start () {
 
 		rot = Quaternion.identity;
-	    // Disable screen dimming
-     	Screen.sleepTimeout = SleepTimeout.NeverSleep;
+		// Disable screen dimming
+		Screen.sleepTimeout = SleepTimeout.NeverSleep;
 		Application.targetFrameRate = 60;
 
 #if UNITY_EDITOR
@@ -143,7 +135,7 @@ public class OpenDiveSensor : MonoBehaviour {
 		answer = javadiveplugininstance.Call<string>("initializeDive");
 		answer = javadiveplugininstance.Call<string>("getDeviceType");
 		if (answer == "Tablet"){
-				is_tablet = 1;
+			is_tablet = 1;
 			Debug.Log("Dive Unity Tablet Mode activated");
 		}
 		else{
@@ -192,7 +184,6 @@ public class OpenDiveSensor : MonoBehaviour {
 
 #if !UNITY_EDITOR
 #if UNITY_ANDROID
-
 		time_since_last_fullscreen += Time.deltaTime;
 		
 		if (time_since_last_fullscreen > 8){
@@ -207,24 +198,15 @@ public class OpenDiveSensor : MonoBehaviour {
 		get_q(ref q0, ref q1, ref q2, ref q3);
 		//get_m(ref m0, ref m1, ref m2);
 
-		vert = q3;
-		horz = -q2;
-
-		if (axes == RotationAxes.MouseXY) {
-			rot.x = -q2;
-			rot.y = q3;
-		} else if (axes == RotationAxes.MouseX) {
-			rot.x = -q2;
-		} else if (axes == RotationAxes.MouseY) {
-			rot.y = q3;
-		}
+		horz = rot.x = -q2;
+		vert = rot.y = q3;
 		rot.z = -q1;
 		rot.w = q0;
 #endif
 #if UNITY_ANDROID || UNITY_IPHONE
 		transform.rotation = rot;
-		if (add_rotation_gameobject) {
-			transform.rotation = rotation_gameobject.transform.rotation * rot;
+		if (target_gameobject) {
+			transform.rotation = target.transform.rotation * rot;
 		}
 		else
 		{
@@ -234,9 +216,10 @@ public class OpenDiveSensor : MonoBehaviour {
 #endif
 
 #if UNITY_EDITOR
-
-		if (emulateMouseInEditor){
-
+		if (emulateMouseInEditor) {
+			vert = Input.GetAxis("Mouse Y");
+			horz = Input.GetAxis("Mouse X");
+			
 			if (axes == RotationAxes.MouseXY)
 			{
 				float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sensitivityX;
@@ -259,13 +242,12 @@ public class OpenDiveSensor : MonoBehaviour {
 			}
 		}
 #endif
-
 	}
-	
+
 	void OnGUI ()
 	{
-	
-/*
+
+		/*
 		if (GUI.Button(new Rect(Screen.width/4-150, Screen.height-100, 300,100), "+IPD")){
 			Debug.Log("Clicked the button with an image");
 			IPDCorrection=IPDCorrection+0.01f;
